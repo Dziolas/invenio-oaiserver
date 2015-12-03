@@ -1,0 +1,19 @@
+{% extends "base.xml" %}
+
+{% block body %}
+<request verb="ListMetadataFormats"
+         {% if incoming.identifier %}
+            identifier="{{ incoming.identifier }}"
+         {% endif %}>
+    {{ g.base_url }}
+</request>
+<ListMetadataFormats>
+    {% for format in formats %}
+        <metadataFormat>
+            <metadataPrefix>{{ format.prefix }}</metadataPrefix>
+            <schema>{{ format.schema }}</schema>
+            <metadataNamespace>{{ format.namespace }}</metadataNamespace>
+        </metadataFormat>
+    {% endfor %}
+</ListMetadataFormats>
+{% endblock %}

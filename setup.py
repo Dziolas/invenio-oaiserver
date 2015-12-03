@@ -119,7 +119,16 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    entry_points={},
+    entry_points={
+        'invenio_base.apps': [
+            'invenio_oaiserver = invenio_oaiserver:InvenioOAIServer',
+        ],
+        'invenio_base.blueprints': [
+            'invenio_oaiserver = invenio_oaiserver.views.server:blueprint',
+        ],
+        'invenio_db.models': [
+            'invenio_oaiserver = invenio_oaiserver.models',
+        ],},
     extras_require=extras_require,
     install_requires=install_requires,
     setup_requires=setup_requires,

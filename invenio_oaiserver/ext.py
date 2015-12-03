@@ -28,7 +28,9 @@ from __future__ import absolute_import, print_function
 
 from flask_babelex import gettext as _
 
-from .views import blueprint
+from .views.server import blueprint as server
+from .views.settings import blueprint as settings
+from . import config
 
 
 class InvenioOAIServer(object):
@@ -43,7 +45,8 @@ class InvenioOAIServer(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
-        app.register_blueprint(blueprint)
+        app.register_blueprint(server)
+        app.register_blueprint(settings)
         app.extensions['invenio-oaiserver'] = self
 
     def init_config(self, app):
@@ -52,3 +55,6 @@ class InvenioOAIServer(object):
             "OAISERVER_BASE_TEMPLATE",
             app.config.get("BASE_TEMPLATE",
                            "invenio_oaiserver/base.html"))
+        for k in dir(config):
+            if k.startswith('SEARCH_'):
+                app.config.setdefault(k, getattr(config, k))

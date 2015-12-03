@@ -12,14 +12,14 @@
 from __future__ import absolute_import
 from flask import (Blueprint,
                    render_template)
-#from invenio_oaiserver.models import Set
+from invenio_oaiserver.models import Set
 
 blueprint = Blueprint(
     'oaisettings',
     __name__,
     url_prefix='/oaisettings',
     static_folder="../static",
-    #template_folder="templates",
+    template_folder="../templates/invenio_oaiserver/settings/",
 )
 
 
@@ -30,7 +30,5 @@ def index():
 @blueprint.route('/sets')
 def manage_sets():
     """Manage sets."""
-    #sets = Set.query.all()
-
-    #return dict(sets=sets)
-    return
+    sets = Set.query.all()
+    return render_template('index.html', sets=sets)

@@ -30,11 +30,11 @@ blueprint = Blueprint(
 def server():
     from flask import current_app as app
     from invenio_oaiserver.views.verbs import (identify,
-                                             list_sets,
-                                             list_metadata_formats,
-                                             list_records,
-                                             list_identifiers,
-                                             get_record)
+                                               list_sets,
+                                               list_metadata_formats,
+                                               list_records,
+                                               list_identifiers,
+                                               get_record)
     ALLOWED_VERBS = {'Identify': identify,
                      'ListSets': list_sets,
                      'ListMetadataFormats': list_metadata_formats,

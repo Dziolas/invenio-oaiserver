@@ -1,6 +1,28 @@
-{% extends "base.html" %}
+{%- extends config.OAISERVER_BASE_TEMPLATE %}
 
 {% block body %}
 <h1>OAI-PMH sets</h1>
+<h2>List of sets</h2>
+<a class="button" href="/oaisettings/sets/new">New set</a>
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Query</th>
+            <th>Collection</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for set in sets %}
+            <td>{{ loop.index }}</td>
+            <td>{{ set.name }}</td>
+            <td>{{ set.description }}</td>
+            <td>{{ set.search_pattern }}</td>
+            <td>{{ set.collection }}</td>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}

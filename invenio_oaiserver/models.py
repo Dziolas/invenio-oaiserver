@@ -7,7 +7,8 @@
 # modify it under the terms of the Revised BSD License; see LICENSE
 # file for more details.
 
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import validates, relationship
+from sqlalchemy import ForeignKey
 from invenio_db import db
 
 class Set(db.Model):
@@ -47,14 +48,23 @@ class Set(db.Model):
     """Search pattern to get records."""
 
     collection = db.Column(
-        db.Text(),
-        default=u'',
+        db.Integer(),
+        default=-1,
         info=dict(
             label='Description',
             description='Optional. Description of the set',
         )
     )
     """Collection to provide via OAI-PMH."""
+
+    parent_name = db.Column(db.Text(),
+                            ForeignKey('oaiset.name'),
+                            default=None)
+
+    parent = db.relationship(
+        "Set",
+        remote_side=[name]
+    )
 
     # @validates('name')
     # def validate_name(self, key, name):

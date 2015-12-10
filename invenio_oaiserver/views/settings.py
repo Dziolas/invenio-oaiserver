@@ -16,7 +16,7 @@ from flask import (Blueprint,
                    flash,
                    redirect,
                    url_for)
-from invenio_oaiserver.models import Set
+from invenio_oaiserver.models import Set, SetRecord
 from wtforms import Form, fields, validators, ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from invenio_db import db
@@ -110,6 +110,15 @@ def submit_set():
                       #collection=form.collection.data,
                       parent=form.parent.data)
         db.session.add(new_set)
+
+        # creating connetion with records
+        # records = get_records(form.query.data)
+        recids = [1,2,3]
+        for recid in recids:
+            new_set_record = SetRecord(set_spec=form.spec.data,
+                                       recid=recid)
+            db.session.add(new_set_record)
+
         db.session.commit()
         flash('New set was added.')
         return redirect(url_for('.manage_sets'))
@@ -120,6 +129,7 @@ def submit_set():
 def delete_set(spec):
     """Manage sets."""
     Set.query.filter(Set.spec==spec).delete()
+    SetRecord.query.filter(SetRecord.set_spec==spec).delete()
     db.session.commit()
     flash('Set %s was deleted.' % spec)
     return redirect(url_for('.manage_sets'))

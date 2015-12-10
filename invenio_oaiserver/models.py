@@ -85,12 +85,36 @@ class Set(db.Model):
 
 
 class SetRecord(db.Model):
+    """
+    """
+
+    __tablename__ = 'oaisetrecord'
+
     set_spec = db.Column(
         db.Text(),
+        ForeignKey(Set.spec),
+        primary_key=True,
         info=dict(
-            label='Description',
-            description='Optional. Description of the set',
+            label='Set spec'
         )
     )
-    recid
-    is_deleted
+    recid = db.Column(
+        db.Integer(),
+        primary_key=True,
+        info=dict(
+            label='Record id'
+        )
+    )
+    is_deleted = db.Column(
+        db.Boolean(),
+        default=False,
+        info=dict(
+            label="Deleted?",
+            description="Is record deleted from the set?"
+        )
+    )
+    set = db.relationship(
+        "Set",
+        remote_side=[Set.spec],
+        backref="records"
+    )

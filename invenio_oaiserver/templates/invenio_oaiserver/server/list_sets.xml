@@ -10,7 +10,7 @@
 <ListSets>
     {% for set in sets %}
         <set>
-            <setSpec>{{ set.spec }}</setSpec>
+            <setSpec>{{ set.get_full_spec() }}</setSpec>
             <setName>{{ set.name }}</setName>
             {% if set.description %}
                 <setDescription>

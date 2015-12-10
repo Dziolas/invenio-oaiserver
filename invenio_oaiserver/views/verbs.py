@@ -71,7 +71,7 @@ def identify():
 
 
 def list_sets():
-    from flask_oaiserver.sets import (get_sets_list, get_sets_count)
+    from invenio_oaiserver.sets import (get_sets_list, get_sets_count)
     required_arg = []
     optional_arg = []
     exclusiv_arg = ["resumptionToken"]
@@ -82,7 +82,7 @@ def list_sets():
     else:
         sets = get_sets_list()
         resumption_token = {}
-        if len(sets) < get_sets_count():
+        if sets.count() < get_sets_count():
             resumption_token["coursor"] = app.config['CFG_SETS_MAX_LENGTH']
             resumption_token["date"] = datetime.strptime(g.response_date,
                                                          "%Y-%m-%dT%H:%M:%Sz") \

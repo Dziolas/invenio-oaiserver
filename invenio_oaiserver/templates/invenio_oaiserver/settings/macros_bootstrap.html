@@ -40,7 +40,15 @@
         <div class={{ kwargs.pop('field_class', '') }}>
             {{ field(class_='form-control', **kwargs) }}
         </div>
-        <div class="col-md-2 bg-warning validation-error" data-field-id="{{ field.id }}"></div>
+        {% if field.errors %}
+            <div class="col-md-2 bg-warning validation-error" data-field-id="{{ field.id }}">
+                <ul class=errors>
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 {%- endmacro %}
 

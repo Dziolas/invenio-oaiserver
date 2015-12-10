@@ -18,7 +18,9 @@ from flask import (Blueprint,
                    url_for)
 from invenio_oaiserver.models import Set
 from wtforms import Form, fields, validators, ValidationError
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from invenio_db import db
+from flask import current_app as app
 
 
 blueprint = Blueprint(
@@ -36,98 +38,49 @@ def get_NewSetForm(*args, **kwargs):
             raise ValidationError('There can be only one field given from: query, collection')
 
     class NewSetForm(Form):
-        sets = [(set.name, set.name) for set in Set.query.all()]
-        sets.insert(0, (0, "No parent set"))
+        # sets = [(set.name, set.name) for set in Set.query.all()]
+        # sets.insert(0, (0, "No parent set"))
 
+        spec = fields.StringField(
+            'Set spec',
+            validators=[validators.InputRequired()],
+        )
         name = fields.StringField(
-            'Set name',
+            'Set long name',
             validators=[validators.InputRequired()],
         )
         description = fields.StringField(
-            'Description',
-            validators=[validators.InputRequired()],
+            'Description'
         )
-        parent = fields.SelectField(
-            'Parent set',
-            choices=sets,
+        parent = QuerySelectField(
+            query_factory=Set.query.all,
+            get_pk=lambda a: a.spec,
+            get_label=lambda a: a.name,
+            allow_blank=True,
+            blank_text='No parent set'
         )
+        #     'Parent set',
+        #     choices=sets,
+        # )
         query = fields.StringField(
             'Query',
-            validators=[query_or_collection_check]
+            validators=[validators.InputRequired()]  # query_or_collection_check]
         )
-        collection = fields.SelectField(
-            'Collection',
-            choices=[(-1,"No collection"),(1,"Tmp Collection 1"),(2,"Tmp Collection 2"),(3,"Tmp Collection 3")],
-        )
-        # XXX See nodes in models.py
-        # consider_deleted_records = fields.BooleanField(
-        #     'Consider deleted records',
+        # collection = fields.SelectMultipleField(
+        #     'Collection',
+        #     choices=[(-1,"No collection"),(1,"Tmp Collection 1"),(2,"Tmp Collection 2"),(3,"Tmp Collection 3")],
         # )
-        # force_run_on_unmodified_records = fields.BooleanField(
-        #     'Force run on unmodified records',
-        # )
-        # filter_pattern = fields.StringField(
-        #     'Search pattern',
-        # )
-        # filter_records = fields.StringField(
-        #     'Record IDs',
-        # )
-        # schedule = fields.StringField(
-        #     'Schedule',
-        # )
-        # requested_action = fields.SelectField(
-        #     'Requested action',
-        #     choices=[
-        #         ('submit_save',) * 2,
-        #         ('submit_run_and_schedule',) * 2,
-        #         ('submit_schedule',) * 2,
-        #         ('submit_run',) * 2,
-        #     ]
-        # )
-        # confirm_hash_on_commit = fields.BooleanField(
-        #     'Ensure record hash did not change during execution',
-        # )
-        # allow_chunking = fields.BooleanField(
-        #     'Allow chunking this task to multiple workers',
-        #     default=True,
-        # )
-        # The ones below this line are hidden by javascript later. Using
-        # HiddenField here would make us lose validation in them. Perhaps a
-        # better way to do this is to use a custom field, but I do not wish to
-        # potentially compromise validation right now.
-        # schedule_enabled = fields.BooleanField(
-        #     'Run this rule periodically',
-        # )
-        # modify = fields.BooleanField(
-        #     'Request modification instead of creation',
-        # )
-        # original_name = fields.StringField(
-        #     'Original name for modification',
-        # )
-
-        # def validate_filter_records(self, field):
-        #     """Ensure that `filter_records` can be parsed by intbitset."""
-        #     if not field.data:
-        #         field.data = intbitset(trailing_bits=True)
-        #     else:
-        #         try:
-        #             field.data = ids_from_input(field.data)
-        #         except TypeError:
-        #             etype, evalue, etb = sys.exc_info()
-        #             six.reraise(ValidationError, evalue, etb)
-
-        # def validate_schedule(self, field):
-        #     """Ensure that `schedule` is accepted by `croniter`."""
-        #     if not field.data:
-        #         return
-        #     try:
-        #         croniter(field.data)
-        #     except Exception:
-        #         # May be TypeError/KeyError/AttributeError, who knows what else
-        #         # Let's play it safe.
-        #         six.reraise(ValidationError, *sys.exc_info()[1:])
-
     return NewSetForm(*args, **kwargs)
+
+
+# @app.before_request
+# def before_request():
+#     method = request.form.get('_method', '').upper()
+#     if method:
+#         request.environ['REQUEST_METHOD'] = method
+#         ctx = flask._request_ctx_stack.top
+#         ctx.url_adapter.default_method = method
+#         assert request.method == method
 
 @blueprint.route('/')
 def index():
@@ -136,7 +89,7 @@ def index():
 @blueprint.route('/sets')
 def manage_sets():
     """Manage sets."""
-    sets = Set.query.all()
+    sets = Set.query.filter(Set.parent == None)
     return render_template('sets.html', sets=sets)
 
 @blueprint.route('/sets/new')
@@ -150,13 +103,23 @@ def submit_set():
     """Insert or modify an existing set."""
     form = get_NewSetForm(request.form)
     if request.method == 'POST' and form.validate():
-        new_set = Set(name=form.name.data,
+        new_set = Set(spec=form.spec.data,
+                      name=form.name.data,
                       description=form.description.data,
                       search_pattern=form.query.data,
-                      collection=form.collection.data,
+                      #collection=form.collection.data,
                       parent=form.parent.data)
         db.session.add(new_set)
         db.session.commit()
         flash('New set was added.')
         return redirect(url_for('.manage_sets'))
     return render_template('make_set.html', new_set_form=form)
+
+# @blueprint.route('/set/<str:name>', methods=['DELETE'])
+@blueprint.route('/sets/<spec>/delete')
+def delete_set(spec):
+    """Manage sets."""
+    Set.query.filter(Set.spec==spec).delete()
+    db.session.commit()
+    flash('Set %s was deleted.' % spec)
+    return redirect(url_for('.manage_sets'))

@@ -53,8 +53,10 @@ class InvenioOAIServer(object):
         """Initialize configuration."""
         app.config.setdefault(
             "OAISERVER_BASE_TEMPLATE",
+            #app.config.get("BASE_TEMPLATE",
+            #               "invenio_oaiserver/base.html"))
             app.config.get("BASE_TEMPLATE",
-                           "invenio_oaiserver/base.html"))
+                           "invenio_oaiserver/settings/base.html"))
         for k in dir(config):
-            if k.startswith('SEARCH_'):
+            if k.startswith('OAISERVER_'):
                 app.config.setdefault(k, getattr(config, k))

@@ -17,12 +17,20 @@ class Set(db.Model):
 
     __tablename__ = 'oaiset'
 
-    name = db.Column(
+    spec = db.Column(
         db.String(40),
         primary_key=True,
         info=dict(
             label='Name',
             description='Name of set.'
+        )
+    )
+
+    name = db.Column(
+        db.String(40),
+        info=dict(
+            label='Long name',
+            description='Long name of set.'
         )
     )
     """Human readable name of the set."""
@@ -41,46 +49,48 @@ class Set(db.Model):
         db.Text(),
         default=u'',
         info=dict(
-            label='Description',
-            description='Optional. Description of the set',
+            label='Search pattern',
+            description='Search pattern to select records',
         )
     )
     """Search pattern to get records."""
 
-    collection = db.Column(
-        db.Integer(),
-        default=-1,
+    # collection = db.Column(
+    #     db.Integer(),
+    #     default=-1,
+    #     info=dict(
+    #         label='Description',
+    #         description='Optional. Description of the set',
+    #     )
+    # )
+    # """Collection to provide via OAI-PMH."""
+
+    parent_name = db.Column(db.Text(),
+                            ForeignKey('oaiset.spec'),
+                            default=None)
+
+    parent = db.relationship(
+        "Set",
+        remote_side=[spec],
+        backref="oaiset",
+        cascade="all, delete-orphan",
+        single_parent=True
+    )
+
+    def get_full_spec(self):
+        if self.parent:
+            return self.parent.get_full_spec()+":"+self.spec
+        else:
+            return self.spec
+
+
+class SetRecord(db.Model):
+    set_spec = db.Column(
+        db.Text(),
         info=dict(
             label='Description',
             description='Optional. Description of the set',
         )
     )
-    """Collection to provide via OAI-PMH."""
-
-    parent_name = db.Column(db.Text(),
-                            ForeignKey('oaiset.name'),
-                            default=None)
-
-    parent = db.relationship(
-        "Set",
-        remote_side=[name]
-    )
-
-    # @validates('name')
-    # def validate_name(self, key, name):
-    #     """Validate name.
-    #     Name should not contain '/'-character. Root collection's name should
-    #     equal CFG_SITE_NAME. Non-root collections should not have name equal to
-    #     CFG_SITE_NAME.
-    #     """
-    #     if '/' in name:
-    #         raise ValueError("collection name shouldn't contain '/'-character")
-
-    #     if not self.is_root and name == cfg['CFG_SITE_NAME']:
-    #         raise ValueError(("only root collection can "
-    #                           "be named equal to the site's name"))
-
-    #     if self.is_root and name != cfg['CFG_SITE_NAME']:
-    #         warn('root collection name should be equal to the site name')
-
-    #     return name
+    recid
+    is_deleted

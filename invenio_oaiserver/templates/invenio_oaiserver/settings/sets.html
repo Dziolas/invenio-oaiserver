@@ -1,6 +1,17 @@
 {%- extends config.OAISERVER_BASE_TEMPLATE %}
 
 {% block body %}
+<div id="alert-message">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div>
 <h1>OAI-PMH sets</h1>
 <h2>List of sets</h2>
 <a class="button" href="/oaisettings/sets/new">New set</a>
@@ -8,19 +19,36 @@
     <thead>
         <tr>
             <th></th>
+            <th>Spec</th>
             <th>Name</th>
             <th>Description</th>
             <th>Query</th>
-            <th>Collection</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
+        <!-- TODO this should be recoursive -->
         {% for set in sets %}
-            <td>{{ loop.index }}</td>
-            <td>{{ set.name }}</td>
-            <td>{{ set.description }}</td>
-            <td>{{ set.search_pattern }}</td>
-            <td>{{ set.collection }}</td>
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ set.spec }}</td>
+                <td>{{ set.name }}</td>
+                <td>{{ set.description }}</td>
+                <td>{{ set.search_pattern }}</td>
+                <td><a class="button" href="/oaisettings/sets/{{ set.spec }}/delete">Delete</a></td>
+            </tr>
+            {% if set.oaiset %}
+                {% for subset in set.oaiset %}
+                    <tr>
+                        <td></td>
+                        <td>-- {{ subset.spec }}</td>
+                        <td>{{ subset.name }}</td>
+                        <td>{{ subset.description }}</td>
+                        <td>{{ subset.search_pattern }}</td>
+                        <td><a class="button" href="/oaisettings/sets/{{ subset.spec }}/delete">Delete</a></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
         {% endfor %}
     </tbody>
 </table>

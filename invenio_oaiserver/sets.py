@@ -9,29 +9,36 @@
 
 """Sets helper functions."""
 
-#from flask_oaiserver import oai
+from flask import current_app as app
+from invenio_oaiserver.models import Set
 
 
 # TODO: to be removed and substituted with database
-SETS = [{'spec': 'music',
-         'name': 'Music collection',
-         'description': 'This is a collection of wide range of music.'},
-        {'spec': 'music:(chopin)',
-         'name': 'Chopin collection',
-         'description': 'Collection of music composed by Chopin'},
-        {'spec': 'music:(techno)',
-         'name': 'Techno music collection'},
-        {'spec': 'pictures',
-         'name': 'Pictures collection'}
-        ]
+# SETS = [{'spec': 'music',
+#          'name': 'Music collection',
+#          'description': 'This is a collection of wide range of music.'},
+#         {'spec': 'music:(chopin)',
+#          'name': 'Chopin collection',
+#          'description': 'Collection of music composed by Chopin'},
+#         {'spec': 'music:(techno)',
+#          'name': 'Techno music collection'},
+#         {'spec': 'pictures',
+#          'name': 'Pictures collection'}
+#         ]
 
 
 def get_sets_list(starting_position=0, max_length=None):
     if not max_length:
-        max_length = oai.app.config['CFG_SETS_MAX_LENGTH']
+        max_length = app.config['OAISERVER_SETS_MAX_LENGTH']
+
+    sets = Set.query.offset(starting_position)
+    if max_length:
+        sets.limit(max_length)
+    return sets
+
     # TODO: in batabase implementation this should not get all elements
-    return SETS[starting_position:starting_position+max_length]
+    #return SETS[starting_position:starting_position+max_length]
 
 
 def get_sets_count():
-    return len(SETS)
+    return Set.query.count()

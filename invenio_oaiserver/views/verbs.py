@@ -14,6 +14,14 @@ import six
 from datetime import (datetime, timedelta)
 from flask import current_app as app
 from uuid import uuid4
+from invenio_oaiserver.sets import get_oai_records
+
+
+def _fill_arguments_with_none(incoming, all_options=[]):
+    for options in all_options:
+        for option in options:
+            if option not in incoming:
+                incoming[option] = None
 
 
 def _get_all_request_args():
@@ -122,27 +130,24 @@ def list_metadata_formats():
                                         ])
 
 
+# TODO differentiate with data passed fo list_records and list_identifiers
 def list_records():
     required_arg = ["metadataPrefix"]
     optional_arg = ["from", "until", "set"]
     exclusiv_arg = ["resumptionToken"]
     incoming = _get_all_request_args()
     _check_args(incoming, required_arg, optional_arg, exclusiv_arg)
+    _fill_arguments_with_none(incoming,
+                              [required_arg,
+                               optional_arg,
+                               exclusiv_arg])
     if g.error:
         return render_template("error.xml", incoming=incoming)
     else:
         return render_template("list_records.xml",
                                incoming=incoming,
-                               records=[{'identifier': 'tmpidentifier1',
-                                         'datestamp': '2015-10-06',
-                                         'sets': ['set1']},
-                                        {'identifier': 'tmpidentifier2',
-                                         'datestamp': '2003-04-01',
-                                         'sets': ['set1', 'set2']},
-                                        {'identifier': 'tmpidentifier3',
-                                         'datestamp': '2014-07-13',
-                                         'sets': ['set3', 'set1']}
-                                        ])
+                               records=get_oai_records(from_date=incoming['from'],
+                                                       until_date=incoming['until']))
 
 
 def list_identifiers():
@@ -151,21 +156,17 @@ def list_identifiers():
     exclusiv_arg = ["resumptionToken"]
     incoming = _get_all_request_args()
     _check_args(incoming, required_arg, optional_arg, exclusiv_arg)
+    _fill_arguments_with_none(incoming,
+                              [required_arg,
+                               optional_arg,
+                               exclusiv_arg])
     if g.error:
         return render_template("error.xml", incoming=incoming)
     else:
         return render_template("list_identifiers.xml",
                                incoming=incoming,
-                               records=[{'identifier': 'tmpidentifier1',
-                                         'datestamp': '2015-10-06',
-                                         'sets': ['set1']},
-                                        {'identifier': 'tmpidentifier2',
-                                         'datestamp': '2003-04-01',
-                                         'sets': ['set1', 'set2']},
-                                        {'identifier': 'tmpidentifier3',
-                                         'datestamp': '2014-07-13',
-                                         'sets': ['set3', 'set1']}
-                                        ])
+                               records=get_oai_records(from_date=incoming['from'],
+                                                       until_date=incoming['until']))
 
 
 def get_record():

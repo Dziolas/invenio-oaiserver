@@ -10,21 +10,7 @@
 """Sets helper functions."""
 
 from flask import current_app as app
-from invenio_oaiserver.models import Set
-
-
-# TODO: to be removed and substituted with database
-# SETS = [{'spec': 'music',
-#          'name': 'Music collection',
-#          'description': 'This is a collection of wide range of music.'},
-#         {'spec': 'music:(chopin)',
-#          'name': 'Chopin collection',
-#          'description': 'Collection of music composed by Chopin'},
-#         {'spec': 'music:(techno)',
-#          'name': 'Techno music collection'},
-#         {'spec': 'pictures',
-#          'name': 'Pictures collection'}
-#         ]
+from invenio_oaiserver.models import Set, SetRecord
 
 
 def get_sets_list(starting_position=0, max_length=None):
@@ -42,3 +28,14 @@ def get_sets_list(starting_position=0, max_length=None):
 
 def get_sets_count():
     return Set.query.count()
+
+
+def get_oai_records(set_spec=None, from_date=None, until_date=None):
+    setrecs = SetRecord.query
+    if set_spec:
+        setrecs = setrecs.filter(SetRecord.set_spec==set_spec)
+    if from_date:
+        setrecs = setrecs.filter(SetRecord.create_date>=from_date)
+    if until_date:
+        setrecs = setrecs.filter(SetRecord.create_date<=until_date)
+    return setrecs

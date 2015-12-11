@@ -7,8 +7,7 @@
 # modify it under the terms of the Revised BSD License; see LICENSE
 # file for more details.
 
-from sqlalchemy.orm import validates, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, func
 from invenio_db import db
 
 class Set(db.Model):
@@ -69,6 +68,23 @@ class Set(db.Model):
                             ForeignKey('oaiset.spec'),
                             default=None)
 
+    create_date = db.Column(
+        db.DateTime(),
+        default=func.now(),
+        info=dict(
+            label='Creation date',
+            desciption='Date of record being added to the OAI set.'
+        )
+    )
+    last_modified = db.Column(
+        db.DateTime(),
+        onupdate=func.utc_timestamp(),
+        info=dict(
+            label='Last modified',
+            desciption='Last modification date.'
+        )
+    )
+
     parent = db.relationship(
         "Set",
         remote_side=[spec],
@@ -113,6 +129,23 @@ class SetRecord(db.Model):
             description="Is record deleted from the set?"
         )
     )
+    create_date = db.Column(
+        db.DateTime(),
+        default=func.now(),
+        info=dict(
+            label='Creation date',
+            desciption='Date of record being added to the OAI set.'
+        )
+    )
+    last_modified = db.Column(
+        db.DateTime(),
+        onupdate=func.utc_timestamp(),
+        info=dict(
+            label='Last modified',
+            desciption='Last modification date.'
+        )
+    )
+
     set = db.relationship(
         "Set",
         remote_side=[Set.spec],

@@ -62,7 +62,7 @@ def get_NewSetForm(*args, **kwargs):
         #     'Parent set',
         #     choices=sets,
         # )
-        query = fields.StringField(
+        search_pattern = fields.StringField(
             'Query',
             validators=[validators.InputRequired()]  # query_or_collection_check]
         )
@@ -92,21 +92,30 @@ def manage_sets():
     sets = Set.query.filter(Set.parent == None)
     return render_template('sets.html', sets=sets)
 
+
 @blueprint.route('/sets/new')
 def new_set():
     """Manage sets."""
     return render_template('make_set.html', new_set_form=get_NewSetForm())
 
 
+@blueprint.route('/sets/edit/<spec>')
+def edit_set(spec):
+    """Manage sets."""
+    set_to_edit = Set.query.filter(Set.spec==spec).one()
+    return render_template('edit_set.html',
+                           edit_set_form=get_NewSetForm(obj=set_to_edit))
+
+
 @blueprint.route('/sets/new', methods=['POST'])
 def submit_set():
-    """Insert or modify an existing set."""
+    """Insert a new set."""
     form = get_NewSetForm(request.form)
     if request.method == 'POST' and form.validate():
         new_set = Set(spec=form.spec.data,
                       name=form.name.data,
                       description=form.description.data,
-                      search_pattern=form.query.data,
+                      search_pattern=form.search_pattern.data,
                       #collection=form.collection.data,
                       parent=form.parent.data)
         db.session.add(new_set)
@@ -124,12 +133,34 @@ def submit_set():
         return redirect(url_for('.manage_sets'))
     return render_template('make_set.html', new_set_form=form)
 
+
+@blueprint.route('/sets/edit/<spec>', methods=['POST'])
+def submit_edit_set(spec):
+    """Insert a new set."""
+    form = get_NewSetForm(request.form)
+    if request.method == 'POST' and form.validate():
+        print("I was eddited")
+        # db.session.add(new_set)
+
+        # # creating connetion with records
+        # # records = get_records(form.query.data)
+        # recids = [1,2,3]
+        # for recid in recids:
+        #     new_set_record = SetRecord(set_spec=form.spec.data,
+        #                                recid=recid)
+        #     db.session.add(new_set_record)
+
+        # db.session.commit()
+        flash('Set was changed')
+        return redirect(url_for('.manage_sets'))
+    return render_template('edit_set.html', edit_set_form=form, spec=spec)
+
 # @blueprint.route('/set/<str:name>', methods=['DELETE'])
 @blueprint.route('/sets/<spec>/delete')
 def delete_set(spec):
     """Manage sets."""
-    Set.query.filter(Set.spec==spec).delete()
     SetRecord.query.filter(SetRecord.set_spec==spec).delete()
+    Set.query.filter(Set.spec==spec).delete()
     db.session.commit()
     flash('Set %s was deleted.' % spec)
     return redirect(url_for('.manage_sets'))

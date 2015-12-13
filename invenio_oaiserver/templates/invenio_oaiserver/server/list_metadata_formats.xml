@@ -8,11 +8,11 @@
     {{ g.base_url }}
 </request>
 <ListMetadataFormats>
-    {% for format in formats %}
+    {% for name, format in formats.iteritems() %}
         <metadataFormat>
-            <metadataPrefix>{{ format.prefix }}</metadataPrefix>
-            <schema>{{ format.schema }}</schema>
-            <metadataNamespace>{{ format.namespace }}</metadataNamespace>
+            <metadataPrefix>{{ name }}</metadataPrefix>
+            <schema>{{ format.schemaURL }}</schema>
+            <metadataNamespace>{{ format.namespaceURL }}</metadataNamespace>
         </metadataFormat>
     {% endfor %}
 </ListMetadataFormats>

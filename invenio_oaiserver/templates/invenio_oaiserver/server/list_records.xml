@@ -19,8 +19,8 @@
 <ListRecords>
     {% for record in records %}
         <header>
-            <identifier>{{ record.identifier }}</identifier>
-            <datestamp>{{ record.datestamp }}</datestamp>
+            <identifier>oai:localhost:{{ record.recid }}</identifier>
+            <datestamp>{{ record.create_date }}</datestamp>
             {% for set in record.sets %}
                 <setSpec>{{ set }}</setSpec>
             {% endfor %}

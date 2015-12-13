@@ -31,7 +31,7 @@ def get_sets_count():
 
 
 def get_oai_records(set_spec=None, from_date=None, until_date=None):
-    setrecs = SetRecord.query
+    setrecs = SetRecord.query.distinct(SetRecord.recid)
     if set_spec:
         setrecs = setrecs.filter(SetRecord.set_spec==set_spec)
     if from_date:

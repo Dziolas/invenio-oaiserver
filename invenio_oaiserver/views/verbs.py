@@ -115,19 +115,10 @@ def list_metadata_formats():
     if g.error:
         return render_template("error.xml", incoming=incoming)
     else:
+        print app.config['OAISERVER_METADATA_FORMATS']
         return render_template("list_metadata_formats.xml",
                                incoming=incoming,
-                               formats=[{'prefix': 'oai_dc',
-                                         'schema': 'http://www.openarchives.org\
-                                                    /OAI/2.0/oai_dc.xsd',
-                                         'namespace': 'http://www.openarchives.\
-                                                       org/OAI/2.0/oai_dc/'},
-                                        {'prefix': 'marcxml',
-                                         'schema': 'http://purl.org/dc/elements\
-                                                    /1.1/',
-                                         'namespace': 'http://www.openarchives.\
-                                                       org/OAI/1.1/dc.xsd'}
-                                        ])
+                               formats=app.config['OAISERVER_METADATA_FORMATS'])
 
 
 # TODO differentiate with data passed fo list_records and list_identifiers

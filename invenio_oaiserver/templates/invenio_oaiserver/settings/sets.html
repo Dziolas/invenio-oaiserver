@@ -1,5 +1,25 @@
 {%- extends config.OAISERVER_BASE_TEMPLATE %}
 
+{% macro render_row(set, loop=None, indent=0) -%}
+    <tr>
+        <td>
+            {% if loop %}
+                {{ loop.index }}
+            {% endif %}
+        </td>
+        <td>{{ indent*"-" }}<a href="{{ url_for(".edit_set", spec=set.spec)}}">{{ set.spec }}</td>
+        <td>{{ set.name }}</td>
+        <td>{{ set.description }}</td>
+        <td>{{ set.search_pattern }}</td>
+        <td><a class="button" href="/oaisettings/sets/{{ set.spec }}/delete">Delete</a></td>
+    </tr>
+    {% if set.oaiset %}
+        {% for subset in set.oaiset %}
+            {{ render_row(subset, indent=indent+1) }}
+        {% endfor %}
+    {% endif %}
+{%- endmacro %}
+
 {% block body %}
 <div id="alert-message">
     {% with messages = get_flashed_messages() %}
@@ -27,28 +47,8 @@
         </tr>
     </thead>
     <tbody>
-        <!-- TODO this should be recoursive -->
         {% for set in sets %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ set.spec }}</td>
-                <td>{{ set.name }}</td>
-                <td>{{ set.description }}</td>
-                <td>{{ set.search_pattern }}</td>
-                <td><a class="button" href="/oaisettings/sets/{{ set.spec }}/delete">Delete</a></td>
-            </tr>
-            {% if set.oaiset %}
-                {% for subset in set.oaiset %}
-                    <tr>
-                        <td></td>
-                        <td>-- {{ subset.spec }}</td>
-                        <td>{{ subset.name }}</td>
-                        <td>{{ subset.description }}</td>
-                        <td>{{ subset.search_pattern }}</td>
-                        <td><a class="button" href="/oaisettings/sets/{{ subset.spec }}/delete">Delete</a></td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
+            {{ render_row(set, loop) }}
         {% endfor %}
     </tbody>
 </table>

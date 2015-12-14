@@ -38,4 +38,5 @@ def app():
     app.config.update(
         TESTING=True
     )
+    InvenioOAIServer(app)
     return app

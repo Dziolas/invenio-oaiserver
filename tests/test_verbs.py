@@ -9,8 +9,9 @@
 
 from __future__ import absolute_import
 from unittest import TestCase
-from flask import g, current_app as app
+from flask import g, Flask
 from invenio_oaiserver.sets import get_sets_count
+from invenio_oaiserver.ext import InvenioOAIServer
 from datetime import (timedelta, datetime)
 import re
 
@@ -20,9 +21,14 @@ class FlaskTestCase(TestCase):
     """Mix-in class for creating the Flask application"""
 
     def setUp(self):
-        self.app = app
-        self.app.testing = True
-        self.oai_url = self.app.config['CFG_SITE_URL']+"/oai2d"
+        self.app = Flask('testapp')
+        self.ext = InvenioOAIServer()
+        assert 'invenio-oaiserver' not in self.app.extensions
+        self.ext.init_app(self.app)
+        assert 'invenio-oaiserver' in self.app.extensions
+
+        self.oai_url = "localhost/oai2d"
+        self.app.config.setdefault("THEME_SITENAME","Invenio")
 
 
     def tearDown(self):
@@ -32,6 +38,18 @@ class FlaskTestCase(TestCase):
 class TestVerbs(FlaskTestCase):
 
     """Tests OAI-PMH verbs"""
+
+    # def test_init():
+    #     """Test extension initialization."""
+    #     app = Flask('testapp')
+    #     ext = InvenioOAIServer(app)
+    #     assert 'invenio-oaiserver' in app.extensions
+
+    #     app = Flask('testapp')
+    #     ext = InvenioOAIServer()
+    #     assert 'invenio-oaiserver' not in app.extensions
+    #     ext.init_app(app)
+    #     assert 'invenio-oaiserver' in app.extensions
 
     def test_no_verb(self):
         with self.app.test_client() as c:
@@ -93,8 +111,8 @@ class TestVerbs(FlaskTestCase):
      </Identify>
 </OAI-PMH>""".format(date=response_date,
                      url=self.oai_url,
-                     repo_name=self.app.config['CFG_SITE_NAME'],
-                     admin_email=self.app.config['CFG_ADMIN_EMAIL'])
+                     repo_name="localhost",  # self.app.config['CFG_SITE_NAME'],
+                     admin_email=self.app.config['OAISERVER_ADMIN_EMAIL'])
             result_data = result.data.decode("utf-8")
             result_data = re.sub(' +', '', result_data.replace('\n', ''))
             expected = re.sub(' +', '', expected.replace('\n', ''))
@@ -178,13 +196,13 @@ class TestVerbs(FlaskTestCase):
 
     def test_list_sets_long(self):
         with self.app.test_client() as c:
-            self.app.config['CFG_SETS_MAX_LENGTH'] = 3
+            self.app.config['OAISERVER_SETS_MAX_LENGTH'] = 3
             result = c.get('/oai2d?verb=ListSets',
                            follow_redirects=True)
             response_date = getattr(g, 'response_date', None)
             exp_date = datetime.strptime(response_date,"%Y-%m-%dT%H:%M:%Sz") + \
-                timedelta(hours=self.app.config['CFG_RESUMPTION_TOKEN_EXPIRE_TIME'])
-            coursor = self.app.config['CFG_SETS_MAX_LENGTH']
+                timedelta(hours=self.app.config['OAISERVER_RESUMPTION_TOKEN_EXPIRE_TIME'])
+            coursor = self.app.config['OAISERVER_SETS_MAX_LENGTH']
             list_size = get_sets_count()
             # TODO: remove placeholder value
             token = "xxx45abttyz"

@@ -6,6 +6,7 @@ OAISERVER_METADATA_FORMATS = {
     "oai_dc": {
         "dojosn_file": "local/path",
         "schemaURL": "http://www.openarchives.org/OAI/2.0/oai_dc.xsd",
-        "namespaceURL": 'http://www.openarchives.org/OAI/2.0/oai_dc/'
+        "namespaceURL": "http://www.openarchives.org/OAI/2.0/oai_dc/",
+        "template": "local/path"
     }
 }

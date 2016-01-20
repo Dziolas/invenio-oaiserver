@@ -9,8 +9,9 @@
 
 from sqlalchemy import ForeignKey, func
 from invenio_db import db
+from sqlalchemy_utils import Timestamp
 
-class Set(db.Model):
+class Set(db.Model, Timestamp):
     """
     """
 
@@ -68,22 +69,6 @@ class Set(db.Model):
                             ForeignKey('oaiset.spec'),
                             default=None)
 
-    create_date = db.Column(
-        db.DateTime(),
-        default=func.now(),
-        info=dict(
-            label='Creation date',
-            desciption='Date of record being added to the OAI set.'
-        )
-    )
-    last_modified = db.Column(
-        db.DateTime(),
-        onupdate=func.utc_timestamp(),
-        info=dict(
-            label='Last modified',
-            desciption='Last modification date.'
-        )
-    )
 
     parent = db.relationship(
         "Set",
@@ -100,54 +85,54 @@ class Set(db.Model):
             return self.spec
 
 
-class SetRecord(db.Model):
-    """
-    """
+# class SetRecord(db.Model):
+#     """
+#     """
 
-    __tablename__ = 'oaisetrecord'
+#     __tablename__ = 'oaisetrecord'
 
-    set_spec = db.Column(
-        db.Text(),
-        ForeignKey(Set.spec),
-        primary_key=True,
-        info=dict(
-            label='Set spec'
-        )
-    )
-    recid = db.Column(
-        db.Integer(),
-        primary_key=True,
-        info=dict(
-            label='Record id'
-        )
-    )
-    is_deleted = db.Column(
-        db.Boolean(),
-        default=False,
-        info=dict(
-            label="Deleted?",
-            description="Is record deleted from the set?"
-        )
-    )
-    create_date = db.Column(
-        db.DateTime(),
-        default=func.now(),
-        info=dict(
-            label='Creation date',
-            desciption='Date of record being added to the OAI set.'
-        )
-    )
-    last_modified = db.Column(
-        db.DateTime(),
-        onupdate=func.utc_timestamp(),
-        info=dict(
-            label='Last modified',
-            desciption='Last modification date.'
-        )
-    )
+#     set_spec = db.Column(
+#         db.Text(),
+#         ForeignKey(Set.spec),
+#         primary_key=True,
+#         info=dict(
+#             label='Set spec'
+#         )
+#     )
+#     recid = db.Column(
+#         db.Integer(),
+#         primary_key=True,
+#         info=dict(
+#             label='Record id'
+#         )
+#     )
+#     is_deleted = db.Column(
+#         db.Boolean(),
+#         default=False,
+#         info=dict(
+#             label="Deleted?",
+#             description="Is record deleted from the set?"
+#         )
+#     )
+#     create_date = db.Column(
+#         db.DateTime(),
+#         default=func.now(),
+#         info=dict(
+#             label='Creation date',
+#             desciption='Date of record being added to the OAI set.'
+#         )
+#     )
+#     last_modified = db.Column(
+#         db.DateTime(),
+#         onupdate=func.utc_timestamp(),
+#         info=dict(
+#             label='Last modified',
+#             desciption='Last modification date.'
+#         )
+#     )
 
-    set = db.relationship(
-        "Set",
-        remote_side=[Set.spec],
-        backref="records"
-    )
+#     set = db.relationship(
+#         "Set",
+#         remote_side=[Set.spec],
+#         backref="records"
+#     )

@@ -128,7 +128,13 @@ setup(
         ],
         'invenio_db.models': [
             'invenio_oaiserver = invenio_oaiserver.models',
-        ],},
+        ],
+        'invenio_celery.tasks': [
+            'invenio_oaiserver_updater = invenio_oaiserver.updater',
+        ],
+        'invenio_pidstore.minters': [
+            'invenio_oaiserver_minter = invenio_oaiserver.oaiid_minter:oaiid_minter',
+        ]},
     extras_require=extras_require,
     install_requires=install_requires,
     setup_requires=setup_requires,

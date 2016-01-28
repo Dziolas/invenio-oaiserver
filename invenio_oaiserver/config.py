@@ -10,3 +10,7 @@ OAISERVER_METADATA_FORMATS = {
         "template": "local/path"
     }
 }
+
+OAISERVER_NAMESPACE_IDENTIFIER = "repo.example.com"
+OAISERVER_SCHEMA_ORCID_PATH = "/pid/orcid"
+OAISERVER_SCHEMA_SET_PATH = "/oai/sets"

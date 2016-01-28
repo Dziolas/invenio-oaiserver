@@ -28,6 +28,8 @@ from __future__ import absolute_import, print_function
 
 from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.base import BaseProvider
+from invenio_oaiserver.config import OAISERVER_NAMESPACE_IDENTIFIER
+from uuid import uuid4
 
 
 class OaiIdProvider(BaseProvider):
@@ -51,8 +53,10 @@ class OaiIdProvider(BaseProvider):
         """Create a new record identifier."""
         # Request next integer in recid sequence.
         assert 'pid_value' not in kwargs
-        # TODO: What namespace do we want, how to manage it
-        kwargs['pid_value'] = "oai:NAMESPACE-ID:"+str(object_uuid)
+
+        kwargs['pid_value'] = ":".join(['oai',
+                                        OAISERVER_NAMESPACE_IDENTIFIER,
+                                        uuid4()])
         kwargs.setdefault('status', cls.default_status)
         if object_type and object_uuid:
             kwargs['status'] = PIDStatus.REGISTERED

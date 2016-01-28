@@ -7,7 +7,7 @@
 # modify it under the terms of the Revised BSD License; see LICENSE
 # file for more details.
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey
 from invenio_db import db
 from sqlalchemy_utils import Timestamp
 
@@ -55,6 +55,23 @@ class Set(db.Model, Timestamp):
     )
     """Search pattern to get records."""
 
+    search_index = db.Column(
+        db.Text(),
+        default=u'',
+        info=dict(
+            label='ElasticSearch index',
+            description='Index to search in the ElasticSearch',
+        )
+    )
+
+    search_doc_type = db.Column(
+        db.Text(),
+        default=u'',
+        info=dict(
+            label='ElasticSearch doc_type',
+            description='Document type to look for in the ElasticSearch',
+        )
+    )
     # collection = db.Column(
     #     db.Integer(),
     #     default=-1,

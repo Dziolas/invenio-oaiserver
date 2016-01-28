@@ -15,7 +15,8 @@ from flask import (Blueprint,
                    request,
                    flash,
                    redirect,
-                   url_for)
+                   url_for,
+                   current_app)
 from invenio_oaiserver.models import Set, SetRecord
 from wtforms import Form, fields, validators, ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -68,6 +69,15 @@ def get_NewSetForm(*args, **kwargs):
             'Query',
             validators=[validators.InputRequired()]  # query_or_collection_check]
         )
+        search_index = fields.SelectField(
+            'ElasticSearch Index',
+            choices=current_app.extensions['invenio-search'].mappings
+        )
+
+        search_doc_type = fields.SelectField(
+            'ElasticSearch doc-type',
+            choices=current_app.extensions['invenio-search'].alliases
+        )
         # collection = fields.SelectMultipleField(
         #     'Collection',
         #     choices=[(-1,"No collection"),(1,"Tmp Collection 1"),(2,"Tmp Collection 2"),(3,"Tmp Collection 3")],
@@ -118,23 +128,10 @@ def submit_set():
                       name=form.name.data,
                       description=form.description.data,
                       search_pattern=form.search_pattern.data,
-                      #collection=form.collection.data,
-                      parent=form.parent.data)
+                      parent=form.parent.data,
+                      search_index=form.search_index_data,
+                      search_doc_type=form.search_doc_type_data,)
         db.session.add(new_set)
-
-        #this shoul be moved to UPDATER (celery task) and it sould always take care of adding records to sets.
-        ##########
-        query = Query(form.query.data)
-        response = current_search_client.search(
-            index="records",# make configurable PER SET
-            doc_type="record",# make configurable PER SET
-            body=query.body,
-            fields="_id, oaiid" #path to oaiid as a configurable
-        )
-        ids = [(a['_id'], a['oaiid']) for a in response['hits']['hits']]
-        add_records_to_set(ids)
-        #########
-
         db.session.commit()
         flash('New set was added.')
         return redirect(url_for('.manage_sets'))
@@ -168,25 +165,6 @@ def submit_edit_set(spec):
         flash('Set was changed')
         return redirect(url_for('.manage_sets'))
     return render_template('edit_set.html', edit_set_form=form, spec=spec)
-
-def add_records_to_set(ids):
-    # use invenio-record functions to add set information to the record
-    # get record via invenio-record.api.Record.... get_record
-    for recid, oaiid in ids:
-        if oaiid:
-            #how to get and modify record
-            rec = get_record(recid)
-            rec.append('oai-set-name'=new_set.name)
-        else:
-            #use minter for this
-            oaiid = OaiIdProvider.create('rec',recid)
-            rec = get_record(recid)
-            #append set nam to the record (with append date as a separete field)
-            #this needs to be configurable
-            rec.append('oai-set-name'=new_set.name)
-        # new_set_record = SetRecord(set_spec=form.spec.data,
-        #                            recid=recid)
-        # db.session.add(new_set_record)
 
 # @blueprint.route('/set/<str:name>', methods=['DELETE'])
 # TODO: what happens when we delete a set
